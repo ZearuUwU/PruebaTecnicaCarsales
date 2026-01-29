@@ -1,7 +1,7 @@
 using Backend.Application.Middleware;
 using Backend.Application.Services;
 using Backend.Core.Interfaces;
-using Backend.Infrastructure.Service;
+using Backend.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,15 +21,15 @@ builder.Services.AddCors(options =>
 var rickAndMortyUrl = builder.Configuration["RickAndMortyApi:BaseUrl"];
 builder.Services.AddHttpClient<IRickAndMortyService, RickAndMortyService>(client =>
 {
-    // El ! fuerza a que no sea nulo, confiamos en appsettings
     client.BaseAddress = new Uri(rickAndMortyUrl!); 
 });
 
 builder.Services.AddScoped<IEpisodeService, EpisodeService>();
+builder.Services.AddScoped<ICharacterService, CharacterService>();
+builder.Services.AddScoped<ILocationService, LocationService>();
 
 var app = builder.Build();
 
-// 2. Pipeline
 app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())

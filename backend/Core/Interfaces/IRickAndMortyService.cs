@@ -4,5 +4,7 @@ namespace Backend.Core.Interfaces;
 
 public interface IRickAndMortyService
 {
-    Task<RickAndMortyResponse> GetEpisodesAsync(int page);
+    Task<List<EpisodeExternal>> GetAllEpisodesAsync();
+    Task<List<CharacterExternal>> GetAllCharactersAsync();
+    Task<List<LocationExternal>> GetAllLocationsAsync();
 }
