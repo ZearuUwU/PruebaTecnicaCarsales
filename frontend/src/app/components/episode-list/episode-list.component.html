@@ -1,0 +1,59 @@
+<app-episode-player 
+  *ngIf="selectedEpisode()" 
+  [episode]="selectedEpisode()" 
+  (closePlayer)="selectedEpisode.set(null)">
+</app-episode-player>
+
+<div class="main-layout">
+  
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>Rick<span>BFF</span></h1>
+    </div>
+
+    <div class="filter-box">
+      <label>Buscar Episodio</label>
+      <input 
+        type="text" 
+        [ngModel]="searchTerm()" 
+        (ngModelChange)="searchTerm.set($event); currentPage.set(1)" 
+        placeholder="Ej: Pilot, S01E01..."
+      >
+    </div>
+
+    <div class="stats">
+      <p>Total: <strong>{{ filteredEpisodes().length }}</strong></p>
+      <p>Vistos: <strong>{{ seenEpisodes().size }}</strong></p>
+    </div>
+  </aside>
+
+  <main class="content">
+    
+    <div class="grid-container">
+      <div 
+        class="card" 
+        *ngFor="let ep of paginatedEpisodes()"
+        (click)="openPlayer(ep)"
+      >
+        <div class="thumbnail season-{{ep.season}}">
+          <span class="play-btn">▶</span>
+          <span class="season-badge">Season {{ep.season}}</span>
+          <div *ngIf="isSeen(ep.id)" class="seen-badge">VISTO</div>
+        </div>
+
+        <div class="meta">
+          <span class="code">{{ ep.episodeCode }}</span>
+          <h3>{{ ep.name }}</h3>
+          <p>{{ ep.airDate }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages() > 1">
+      <button (click)="prevPage()" [disabled]="currentPage() === 1">← Anterior</button>
+      <span>Página {{ currentPage() }} de {{ totalPages() }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Siguiente →</button>
+    </div>
+
+  </main>
+</div>
