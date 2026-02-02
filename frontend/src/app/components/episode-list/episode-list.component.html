@@ -1,52 +1,63 @@
-<app-episode-player 
-  *ngIf="selectedEpisode()" 
-  [episode]="selectedEpisode()" 
-  (closePlayer)="selectedEpisode.set(null)">
+<app-episode-player *ngIf="selectedEpisode()" [episode]="selectedEpisode()" (closePlayer)="selectedEpisode.set(null)">
 </app-episode-player>
 
 <div class="main-layout">
-  
+
   <aside class="sidebar">
-    <div class="brand">
+    <div class="header-section">
       <h1>Rick<span>BFF</span></h1>
+      <p class="subtitle">Explorador de Episodios</p>
     </div>
 
-    <div class="filter-box">
-      <label>Buscar Episodio</label>
-      <input 
-        type="text" 
-        [ngModel]="searchTerm()" 
-        (ngModelChange)="searchTerm.set($event); currentPage.set(1)" 
-        placeholder="Ej: Pilot, S01E01..."
-      >
+    <div class="filter-container">
+      <h3>Filtros</h3>
+
+      <div class="filter-group">
+        <label>🔍 Buscar</label>
+        <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event); currentPage.set(1)"
+          placeholder="Nombre o Código (S01E01)...">
+      </div>
+
+      <div class="filter-group">
+        <label>🎬 Temporada</label>
+        <select [ngModel]="selectedSeason()" (ngModelChange)="selectedSeason.set($event); currentPage.set(1)">
+          <option value="All">Todas</option>
+          <option value="1">Temporada 1</option>
+          <option value="2">Temporada 2</option>
+          <option value="3">Temporada 3</option>
+          <option value="4">Temporada 4</option>
+          <option value="5">Temporada 5</option>
+        </select>
+      </div>
+
+      <div class="filter-group date-range">
+        <label>📅 Fecha Emisión</label>
+        <div class="date-inputs">
+          <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event); currentPage.set(1)"
+            title="Desde">
+          <span class="separator">-</span>
+          <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event); currentPage.set(1)"
+            title="Hasta">
+        </div>
+      </div>
+
+      <button class="reset-btn" (click)="resetFilters()">
+        Limpiar Filtros
+      </button>
     </div>
 
     <div class="stats">
-      <p>Total: <strong>{{ filteredEpisodes().length }}</strong></p>
+      <p>Mostrando: <strong>{{ filteredEpisodes().length }}</strong></p>
       <p>Vistos: <strong>{{ seenEpisodes().size }}</strong></p>
     </div>
   </aside>
 
   <main class="content">
-    
+    @if (paginatedEpisodes().length > 0) {
     <div class="grid-container">
-      <div 
-        class="card" 
-        *ngFor="let ep of paginatedEpisodes()"
-        (click)="openPlayer(ep)"
-      >
-        <div class="thumbnail season-{{ep.season}}">
-          <span class="play-btn">▶</span>
-          <span class="season-badge">Season {{ep.season}}</span>
-          <div *ngIf="isSeen(ep.id)" class="seen-badge">VISTO</div>
-        </div>
-
-        <div class="meta">
-          <span class="code">{{ ep.episodeCode }}</span>
-          <h3>{{ ep.name }}</h3>
-          <p>{{ ep.airDate }}</p>
-        </div>
-      </div>
+      @for (ep of paginatedEpisodes(); track ep.id) {
+      <app-episode-card [episode]="ep" [isSeen]="isSeen(ep.id)" (onOpen)="openPlayer($event)"></app-episode-card>
+      }
     </div>
 
     <div class="pagination" *ngIf="totalPages() > 1">
@@ -54,6 +65,13 @@
       <span>Página {{ currentPage() }} de {{ totalPages() }}</span>
       <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Siguiente →</button>
     </div>
-
+    } @else {
+    <div class="empty-state">
+      <div class="placeholder-icon">🛸</div>
+      <h2>No encontramos episodios</h2>
+      <p>Intenta ajustar los filtros de búsqueda.</p>
+      <button (click)="resetFilters()">Ver todos</button>
+    </div>
+    }
   </main>
 </div>
