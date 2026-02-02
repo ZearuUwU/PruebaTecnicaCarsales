@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { Character } from '../../interfaces/character.interface';
 
 @Component({
-    selector: 'app-character-card',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  selector: 'app-character-card',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
     <div class="char-card" tabindex="0">
       <div class="char-image">
-        <img [src]="character().image" [alt]="character().name" loading="lazy">
+        <img [src]="character().imageUrl" [alt]="character().name" loading="lazy">
         <div class="status-badge" [ngClass]="character().status.toLowerCase()">
           {{ character().status }}
         </div>
@@ -29,8 +29,8 @@ import { Character } from '../../interfaces/character.interface';
       </div>
     </div>
   `,
-    styleUrls: ['./character-card.component.scss']
+  styleUrls: ['./character-card.component.scss']
 })
 export class CharacterCardComponent {
-    character = input.required<Character>();
+  character = input.required<Character>();
 }
