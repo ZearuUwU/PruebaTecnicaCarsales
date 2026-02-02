@@ -15,9 +15,14 @@ public class CharactersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] string? name = null,
+        [FromQuery] string? status = null,
+        [FromQuery] string? species = null,
+        [FromQuery] string? gender = null)
     {
-        var result = await _characterService.GetAllCharactersAsync();
+        var result = await _characterService.GetCharactersAsync(page, name, status, species, gender);
         return Ok(result);
     }
 }

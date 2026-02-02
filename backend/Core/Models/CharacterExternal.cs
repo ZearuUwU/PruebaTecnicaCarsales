@@ -8,4 +8,5 @@ public class CharacterExternal
     public string? Species { get; set; }
     public string? Gender { get; set; }
     public string? Image { get; set; }   
+    public List<string>? Episode { get; set; }
 }

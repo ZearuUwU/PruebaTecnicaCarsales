@@ -13,20 +13,25 @@ public class CharacterService : ICharacterService
         _rickAndMortyService = rickAndMortyService;
     }
 
-    public async Task<List<CharacterDto>> GetAllCharactersAsync()
+    public async Task<RickAndMortyResponse<CharacterDto>> GetCharactersAsync(int page, string? name = null, string? status = null, string? species = null, string? gender = null)
     {
-        var externalCharacters = await _rickAndMortyService.GetAllCharactersAsync();
+        var response = await _rickAndMortyService.GetCharactersAsync(page, name, status, species, gender);
 
-        var characters = externalCharacters.Select(c => new CharacterDto
+        var characters = response.Results?.Select(c => new CharacterDto
         {
             Id = c.Id,
             Name = c.Name ?? "Desconocido",
             Status = c.Status ?? "Unknown",
             Species = c.Species ?? "Unknown",
             Gender = c.Gender ?? "Unknown",
-            ImageUrl = c.Image ?? "" 
-        }).ToList();
+            ImageUrl = c.Image ?? "",
+            Episode = c.Episode ?? new List<string>()
+        }).ToList() ?? new List<CharacterDto>();
 
-        return characters;
+        return new RickAndMortyResponse<CharacterDto>
+        {
+            Info = response.Info,
+            Results = characters
+        };
     }
 }

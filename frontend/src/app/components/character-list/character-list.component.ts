@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -16,69 +16,59 @@ import { CharacterCardComponent } from '../character-card/character-card.compone
 export class CharacterListComponent implements OnInit {
     private characterService = inject(CharacterService);
 
-    allCharacters = signal<Character[]>([]);
+    characters = signal<Character[]>([]);
 
     searchTerm = signal<string>('');
     selectedStatus = signal<string>('All');
     selectedSpecies = signal<string>('');
     selectedGender = signal<string>('All');
-    selectedEpisode = signal<number | null>(null);
+
 
     currentPage = signal<number>(1);
-    itemsPerPage = 12;
-
-    filteredCharacters = computed(() => {
-        let chars = this.allCharacters();
-        const term = this.searchTerm().toLowerCase();
-        const status = this.selectedStatus();
-        const species = this.selectedSpecies().toLowerCase();
-        const gender = this.selectedGender();
-        const episodeId = this.selectedEpisode();
-
-        if (term) {
-            chars = chars.filter(c => c.name.toLowerCase().includes(term));
-        }
-        if (status !== 'All') {
-            chars = chars.filter(c => c.status === status);
-        }
-        if (species) {
-            chars = chars.filter(c => c.species.toLowerCase().includes(species));
-        }
-        if (gender !== 'All') {
-            chars = chars.filter(c => c.gender === gender);
-        }
-
-        if (episodeId) {
-            const urlSuffix = `/${episodeId}`;
-            chars = chars.filter(c => c.episode.some(url => url.endsWith(urlSuffix)));
-        }
-
-        return chars;
-    });
-
-    paginatedCharacters = computed(() => {
-        const startIndex = (this.currentPage() - 1) * this.itemsPerPage;
-        const endIndex = startIndex + this.itemsPerPage;
-        return this.filteredCharacters().slice(startIndex, endIndex);
-    });
-
-    totalPages = computed(() => {
-        return Math.ceil(this.filteredCharacters().length / this.itemsPerPage);
-    });
+    totalPages = signal<number>(1);
+    totalItems = signal<number>(0);
 
     ngOnInit() {
-        this.characterService.getAllCharacters().subscribe({
-            next: (data) => this.allCharacters.set(data),
-            error: (e) => console.error('Error fetching characters', e)
+        this.loadCharacters();
+    }
+
+    loadCharacters() {
+        this.characterService.getCharacters(
+            this.currentPage(),
+            this.searchTerm(),
+            this.selectedStatus(),
+            this.selectedSpecies(),
+            this.selectedGender()
+        ).subscribe({
+            next: (response) => {
+                this.characters.set(response.results);
+                this.totalPages.set(response.info.pages);
+                this.totalItems.set(response.info.count);
+            },
+            error: (e) => {
+                console.error('Error fetching characters', e);
+                this.characters.set([]);
+            }
         });
     }
 
+    onFilterChange() {
+        this.currentPage.set(1);
+        this.loadCharacters();
+    }
+
     nextPage() {
-        if (this.currentPage() < this.totalPages()) this.currentPage.update(p => p + 1);
+        if (this.currentPage() < this.totalPages()) {
+            this.currentPage.update(p => p + 1);
+            this.loadCharacters();
+        }
     }
 
     prevPage() {
-        if (this.currentPage() > 1) this.currentPage.update(p => p - 1);
+        if (this.currentPage() > 1) {
+            this.currentPage.update(p => p - 1);
+            this.loadCharacters();
+        }
     }
 
     resetFilters() {
@@ -86,7 +76,7 @@ export class CharacterListComponent implements OnInit {
         this.selectedStatus.set('All');
         this.selectedSpecies.set('');
         this.selectedGender.set('All');
-        this.selectedEpisode.set(null);
         this.currentPage.set(1);
+        this.loadCharacters();
     }
 }

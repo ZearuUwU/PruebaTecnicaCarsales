@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -17,75 +17,70 @@ import { EpisodeCardComponent } from '../episode-card/episode-card.component';
 export class EpisodeListComponent implements OnInit {
   private episodeService = inject(EpisodeService);
 
-  allEpisodes = signal<Episode[]>([]);
+  episodes = signal<Episode[]>([]);
 
   searchTerm = signal<string>('');
   selectedSeason = signal<string>('All');
   startDate = signal<string | null>(null);
-  endDate = signal<string | null>(null);
 
   currentPage = signal<number>(1);
-  itemsPerPage = 12;
+  totalPages = signal<number>(1);
+  totalItems = signal<number>(0);
 
   selectedEpisode = signal<Episode | null>(null);
   seenEpisodes = signal<Set<number>>(new Set());
 
-
-  filteredEpisodes = computed(() => {
-    let episodes = this.allEpisodes();
-
-    const term = this.searchTerm().toLowerCase();
-    const season = this.selectedSeason();
-    const start = this.startDate();
-    const end = this.endDate();
-
-    if (term) {
-      episodes = episodes.filter(ep =>
-        ep.name.toLowerCase().includes(term) ||
-        ep.episodeCode.toLowerCase().includes(term)
-      );
-    }
-
-    if (season !== 'All') {
-      episodes = episodes.filter(ep => ep.season.toString() === season);
-    }
-
-    if (start || end) {
-      episodes = episodes.filter(ep => {
-        const epDate = new Date(ep.airDate).getTime();
-        const afterStart = start ? epDate >= new Date(start).getTime() : true;
-        const beforeEnd = end ? epDate <= new Date(end).getTime() : true;
-        return afterStart && beforeEnd;
-      });
-    }
-
-    return episodes;
-  });
-
-  paginatedEpisodes = computed(() => {
-    const startIndex = (this.currentPage() - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    return this.filteredEpisodes().slice(startIndex, endIndex);
-  });
-
-  totalPages = computed(() => {
-    return Math.ceil(this.filteredEpisodes().length / this.itemsPerPage);
-  });
+  constructor() {
+  }
 
   ngOnInit() {
     this.loadSeenState();
-    this.episodeService.getEpisodes(1).subscribe({
-      next: (data) => this.allEpisodes.set(data),
-      error: (e) => console.error(e)
+    this.loadEpisodes();
+  }
+
+  loadEpisodes() {
+    const page = this.currentPage();
+    const name = this.searchTerm();
+    const episode = this.searchTerm().match(/S\d\dE\d\d/i) ? this.searchTerm() : '';
+    const cleanName = episode ? '' : name;
+
+    this.episodeService.getEpisodes(
+      page,
+      cleanName,
+      episode,
+      this.selectedSeason(),
+      this.startDate() || ''
+    ).subscribe({
+      next: (response) => {
+        this.episodes.set(response.results);
+        this.totalPages.set(response.info.pages);
+        this.totalItems.set(response.info.count);
+      },
+      error: (e) => {
+        console.error('Error loading episodes', e);
+        this.episodes.set([]);
+        this.totalPages.set(0);
+      }
     });
   }
 
+  onFilterChange() {
+    this.currentPage.set(1);
+    this.loadEpisodes();
+  }
+
   nextPage() {
-    if (this.currentPage() < this.totalPages()) this.currentPage.update(p => p + 1);
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update(p => p + 1);
+      this.loadEpisodes();
+    }
   }
 
   prevPage() {
-    if (this.currentPage() > 1) this.currentPage.update(p => p - 1);
+    if (this.currentPage() > 1) {
+      this.currentPage.update(p => p - 1);
+      this.loadEpisodes();
+    }
   }
 
   openPlayer(ep: Episode) {
@@ -114,7 +109,7 @@ export class EpisodeListComponent implements OnInit {
     this.searchTerm.set('');
     this.selectedSeason.set('All');
     this.startDate.set(null);
-    this.endDate.set(null);
     this.currentPage.set(1);
+    this.loadEpisodes();
   }
 }

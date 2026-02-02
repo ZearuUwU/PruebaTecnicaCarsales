@@ -15,10 +15,15 @@ public class EpisodesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] int page = 1)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1, 
+        [FromQuery] string? name = null,
+        [FromQuery] string? episode = null,
+        [FromQuery] string? season = null,
+        [FromQuery] string? startDate = null,
+        [FromQuery] string? endDate = null)
     {
-        var episodes = await _episodeService.GetAllEpisodesAsync(); 
-        
-        return Ok(episodes);
+        var result = await _episodeService.GetEpisodesAsync(page, name, episode, season, startDate, endDate);
+        return Ok(result);
     }
 }

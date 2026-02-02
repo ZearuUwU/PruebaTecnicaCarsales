@@ -13,18 +13,22 @@ public class LocationService : ILocationService
         _rickAndMortyService = rickAndMortyService;
     }
 
-    public async Task<List<LocationDto>> GetAllLocationsAsync()
+    public async Task<RickAndMortyResponse<LocationDto>> GetLocationsAsync(int page)
     {
-        var externalLocations = await _rickAndMortyService.GetAllLocationsAsync();
+        var response = await _rickAndMortyService.GetLocationsAsync(page);
 
-        var locations = externalLocations.Select(l => new LocationDto
+        var locations = response.Results?.Select(l => new LocationDto
         {
             Id = l.Id,
             Name = l.Name ?? "Desconocido",
             Type = l.Type ?? "Unknown",
             Dimension = l.Dimension ?? "Unknown"
-        }).ToList();
+        }).ToList() ?? new List<LocationDto>();
 
-        return locations;
+        return new RickAndMortyResponse<LocationDto>
+        {
+            Info = response.Info,
+            Results = locations
+        };
     }
 }

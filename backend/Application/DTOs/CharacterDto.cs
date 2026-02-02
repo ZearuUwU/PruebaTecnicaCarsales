@@ -8,4 +8,5 @@ public class CharacterDto
     public string Species { get; set; } = string.Empty;
     public string Gender { get; set; } = string.Empty;
     public string ImageUrl { get; set; } = string.Empty;
+    public List<string> Episode { get; set; } = new();
 }
