@@ -38,7 +38,6 @@ $text-muted: #aaa;
     justify-content: center;
     overflow: hidden;
 
-    // Modern gradients for seasons
     &.season-1 {
         background: radial-gradient(circle at center, #354a5f, #0f1214);
     }
@@ -125,7 +124,6 @@ $text-muted: #aaa;
         line-height: 1.4;
         color: white;
 
-        // Line clamping
         display: -webkit-box;
         line-clamp: 2;
         -webkit-line-clamp: 2;

@@ -1,0 +1,101 @@
+<div class="main-layout">
+  
+  <aside class="sidebar">
+    <div class="header-section">
+      <h1>Rick<span>BFF</span></h1>
+      <p class="subtitle">Directorio de Personajes</p>
+      <a routerLink="/" class="nav-link">← Volver a Episodios</a>
+    </div>
+
+    <div class="filter-container">
+      <h3>Filtros</h3>
+      
+      <div class="filter-group">
+        <label>🔬 Buscar Nombre</label>
+        <input 
+          type="text" 
+          [ngModel]="searchTerm()" 
+          (ngModelChange)="searchTerm.set($event); currentPage.set(1)" 
+          placeholder="Ej: Rick, Morty..."
+        >
+      </div>
+
+      <div class="filter-group">
+        <label>❤️ Estado</label>
+        <select 
+          [ngModel]="selectedStatus()" 
+          (ngModelChange)="selectedStatus.set($event); currentPage.set(1)">
+          <option value="All">Todos</option>
+          <option value="Alive">Vivo (Alive)</option>
+          <option value="Dead">Muerto (Dead)</option>
+          <option value="unknown">Desconocido</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>🧬 Especie</label>
+        <input 
+          type="text" 
+          [ngModel]="selectedSpecies()" 
+          (ngModelChange)="selectedSpecies.set($event); currentPage.set(1)"
+          placeholder="Ej: Human, Alien..."
+        >
+      </div>
+
+      <div class="filter-group">
+        <label>⚧ Género</label>
+        <select 
+          [ngModel]="selectedGender()" 
+          (ngModelChange)="selectedGender.set($event); currentPage.set(1)">
+          <option value="All">Todos</option>
+          <option value="Female">Femenino</option>
+          <option value="Male">Masculino</option>
+          <option value="Genderless">Sin Género</option>
+          <option value="unknown">Desconocido</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>📺 Aparece en Episodio (ID)</label>
+        <input 
+          type="number" 
+          [ngModel]="selectedEpisode()" 
+          (ngModelChange)="selectedEpisode.set($event); currentPage.set(1)"
+          placeholder="Ej: 1"
+          min="1"
+        >
+      </div>
+
+      <button class="reset-btn" (click)="resetFilters()">
+        Limpiar Filtros
+      </button>
+    </div>
+
+    <div class="stats">
+      <p>Mostrando: <strong>{{ filteredCharacters().length }}</strong></p>
+      <p>Total API: <strong>{{ allCharacters().length }}</strong></p>
+    </div>
+  </aside>
+
+  <main class="content">
+    @if (paginatedCharacters().length > 0) {
+      <div class="grid-container">
+        @for (char of paginatedCharacters(); track char.id) {
+          <app-character-card [character]="char"></app-character-card>
+        }
+      </div>
+
+      <div class="pagination" *ngIf="totalPages() > 1">
+        <button (click)="prevPage()" [disabled]="currentPage() === 1">← Anterior</button>
+        <span>Página {{ currentPage() }} de {{ totalPages() }}</span>
+        <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Siguiente →</button>
+      </div>
+    } @else {
+      <div class="empty-state">
+        <h2>No se encontraron personajes</h2>
+        <p>Prueba ajustando los filtros de búsqueda.</p>
+        <button (click)="resetFilters()">Ver Todos</button>
+      </div>
+    }
+  </main>
+</div>

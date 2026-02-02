@@ -54,6 +54,18 @@ $border: rgba(255, 255, 255, 0.08);
       color: $text-muted;
       font-size: 0.85rem;
     }
+
+    .nav-link {
+      display: inline-block;
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      color: $primary;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
   }
 
   .filter-container {

@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { EpisodeService } from '../../services/episode.service';
 import { Episode } from '../../interfaces/episode.interface';
 import { EpisodePlayerComponent } from '../episode-player/episode-player.component';
@@ -9,7 +10,7 @@ import { EpisodeCardComponent } from '../episode-card/episode-card.component';
 @Component({
   selector: 'app-episode-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, EpisodePlayerComponent, EpisodeCardComponent],
+  imports: [CommonModule, FormsModule, RouterModule, EpisodePlayerComponent, EpisodeCardComponent],
   templateUrl: './episode-list.component.html',
   styleUrl: './episode-list.component.scss'
 })
