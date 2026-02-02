@@ -10,7 +10,7 @@ import { ApiResponse } from '../interfaces/api-response.interface';
 })
 export class EpisodeService {
   private http = inject(HttpClient);
-  private apiUrl = environment.apiUrl || 'http://localhost:5199/api';
+  private apiUrl = environment.apiUrl;
 
   getEpisodes(page: number = 1, name: string = '', episode: string = '', season: string = '', startDate: string = '', endDate: string = ''): Observable<ApiResponse<Episode>> {
     let params = new HttpParams().set('page', page.toString());

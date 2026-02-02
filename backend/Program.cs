@@ -10,10 +10,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var corsOrigin = builder.Configuration["Cors:Origin"] ?? "http://localhost:4200";
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp",
-        policy => policy.WithOrigins("http://localhost:4200")
+        policy => policy.WithOrigins(corsOrigin)
                         .AllowAnyMethod()
                         .AllowAnyHeader());
 });

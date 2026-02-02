@@ -10,7 +10,7 @@ import { ApiResponse } from '../interfaces/api-response.interface';
 })
 export class CharacterService {
     private http = inject(HttpClient);
-    private apiUrl = environment.apiUrl || 'http://localhost:5199/api';
+    private apiUrl = environment.apiUrl;
 
     getCharacters(
         page: number = 1,

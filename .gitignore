@@ -1,0 +1,20 @@
+# AI context files
+.gemini
+.gemini/
+.cursor
+.cursor/
+.cursorrules
+.vscode/
+
+# Node
+node_modules/
+
+# Dotnet
+bin/
+obj/
+.vs/
+*.user
+
+# OS
+.DS_Store
+Thumbs.db
