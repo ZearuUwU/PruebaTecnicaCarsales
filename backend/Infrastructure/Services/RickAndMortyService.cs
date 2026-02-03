@@ -2,15 +2,18 @@ using System.Text.Json;
 using System.Web;
 using Backend.Core.Interfaces;
 using Backend.Core.Models;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Backend.Infrastructure.Services; 
 public class RickAndMortyService : IRickAndMortyService
 {
     private readonly HttpClient _httpClient;
+    private readonly IMemoryCache _cache;
 
-    public RickAndMortyService(HttpClient httpClient)
+    public RickAndMortyService(HttpClient httpClient, IMemoryCache cache)
     {
         _httpClient = httpClient;
+        _cache = cache;
     }
 
     public async Task<List<EpisodeExternal>> GetAllEpisodesAsync() 
@@ -58,8 +61,6 @@ public class RickAndMortyService : IRickAndMortyService
         {
             var requestUrl = nextUrl.StartsWith("http") ? nextUrl : nextUrl;
             
-            // Basic delay to be safe, though not strictly needed for 3 pages
-            // But user mentioned backend issues 429
             await Task.Delay(100); 
 
             try 
@@ -86,17 +87,23 @@ public class RickAndMortyService : IRickAndMortyService
 
     private async Task<RickAndMortyResponse<T>> FetchData<T>(string endpoint)
     {
+        if (_cache.TryGetValue(endpoint, out RickAndMortyResponse<T>? cachedResponse))
+        {
+            return cachedResponse!;
+        }
+
         try 
         {
             var response = await _httpClient.GetAsync(endpoint);
             
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                return new RickAndMortyResponse<T> 
+                var empty = new RickAndMortyResponse<T> 
                 { 
                     Info = new Info { Count = 0, Pages = 0 }, 
                     Results = new List<T>() 
                 };
+                return empty;
             }
 
             response.EnsureSuccessStatusCode();
@@ -104,7 +111,11 @@ public class RickAndMortyService : IRickAndMortyService
             var content = await response.Content.ReadAsStringAsync();
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             
-            return JsonSerializer.Deserialize<RickAndMortyResponse<T>>(content, options) ?? new RickAndMortyResponse<T>();
+            var result = JsonSerializer.Deserialize<RickAndMortyResponse<T>>(content, options) ?? new RickAndMortyResponse<T>();
+
+            _cache.Set(endpoint, result, TimeSpan.FromMinutes(5));
+
+            return result;
         }
         catch (HttpRequestException)
         {

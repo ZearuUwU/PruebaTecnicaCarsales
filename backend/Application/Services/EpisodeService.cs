@@ -21,10 +21,10 @@ public class EpisodeService : IEpisodeService
             var dtos = allEpisodes.Select(e => MapToDto(e)).ToList();
 
             if (!string.IsNullOrEmpty(name)) 
-                dtos = dtos.Where(e => e.Name.Contains(name, StringComparison.OrdinalIgnoreCase) || e.EpisodeCode.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
+                dtos = dtos.Where(e => (e.Name != null && e.Name.Contains(name, StringComparison.OrdinalIgnoreCase)) || (e.EpisodeCode != null && e.EpisodeCode.Contains(name, StringComparison.OrdinalIgnoreCase))).ToList();
 
             if (!string.IsNullOrEmpty(episode))
-                dtos = dtos.Where(e => e.EpisodeCode.Contains(episode, StringComparison.OrdinalIgnoreCase)).ToList();
+                dtos = dtos.Where(e => e.EpisodeCode != null && e.EpisodeCode.Contains(episode, StringComparison.OrdinalIgnoreCase)).ToList();
 
             if (!string.IsNullOrEmpty(season) && season != "All")
             {

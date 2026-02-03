@@ -58,12 +58,27 @@ $border: rgba(255, 255, 255, 0.08);
         .nav-link {
             display: inline-block;
             margin-top: 0.5rem;
-            font-size: 0.8rem;
+            padding: 8px 16px;
+            background-color: rgba($primary, 0.1);
+            border: 1px solid rgba($primary, 0.3);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
             color: $primary;
             text-decoration: none;
+            transition: all 0.2s ease;
+            text-align: center;
 
             &:hover {
-                text-decoration: underline;
+                background-color: $primary;
+                color: $dark;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba($primary, 0.3);
+                text-decoration: none;
+            }
+
+            &:active {
+                transform: translateY(0);
             }
         }
     }

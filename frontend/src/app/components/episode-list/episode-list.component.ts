@@ -3,9 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { EpisodeService } from '../../services/episode.service';
+import { FilterMapperService } from '../../services/filter-mapper.service';
 import { Episode } from '../../interfaces/episode.interface';
 import { EpisodePlayerComponent } from '../episode-player/episode-player.component';
 import { EpisodeCardComponent } from '../episode-card/episode-card.component';
+import { finalize, forkJoin, delay, of } from 'rxjs';
+
+import { LoadingOverlayService } from '../../services/loading-overlay.service';
 
 @Component({
   selector: 'app-episode-list',
@@ -16,6 +20,8 @@ import { EpisodeCardComponent } from '../episode-card/episode-card.component';
 })
 export class EpisodeListComponent implements OnInit {
   private episodeService = inject(EpisodeService);
+  private filterMapper = inject(FilterMapperService);
+  private loadingOverlay = inject(LoadingOverlayService);
 
   episodes = signal<Episode[]>([]);
 
@@ -26,6 +32,7 @@ export class EpisodeListComponent implements OnInit {
   currentPage = signal<number>(1);
   totalPages = signal<number>(1);
   totalItems = signal<number>(0);
+  isLoading = signal<boolean>(false);
 
   selectedEpisode = signal<Episode | null>(null);
   seenEpisodes = signal<Set<number>>(new Set());
@@ -39,29 +46,39 @@ export class EpisodeListComponent implements OnInit {
   }
 
   loadEpisodes() {
+    this.isLoading.set(true);
+    this.loadingOverlay.show('Cargando episodios...');
+    this.episodes.set([]);
     const page = this.currentPage();
-    const name = this.searchTerm();
-    const episode = this.searchTerm().match(/S\d\dE\d\d/i) ? this.searchTerm() : '';
-    const cleanName = episode ? '' : name;
+    const searchParams = this.filterMapper.mapEpisodeSearchTerm(this.searchTerm());
 
-    this.episodeService.getEpisodes(
+    const data$ = this.episodeService.getEpisodes(
       page,
-      cleanName,
-      episode,
+      searchParams.name || '',
+      searchParams.episode || '',
       this.selectedSeason(),
       this.startDate() || ''
-    ).subscribe({
-      next: (response) => {
-        this.episodes.set(response.results);
-        this.totalPages.set(response.info.pages);
-        this.totalItems.set(response.info.count);
-      },
-      error: (e) => {
-        console.error('Error loading episodes', e);
-        this.episodes.set([]);
-        this.totalPages.set(0);
-      }
-    });
+    );
+
+    const minDelay$ = of(true).pipe(delay(500));
+
+    forkJoin([data$, minDelay$])
+      .pipe(finalize(() => {
+        this.isLoading.set(false);
+        this.loadingOverlay.hide();
+      }))
+      .subscribe({
+        next: ([response, _]) => {
+          this.episodes.set(response?.results ?? []);
+          this.totalPages.set(response?.info?.pages ?? 0);
+          this.totalItems.set(response?.info?.count ?? 0);
+        },
+        error: (e) => {
+          this.episodes.set([]);
+          this.totalPages.set(0);
+          this.totalItems.set(0);
+        }
+      });
   }
 
   onFilterChange() {

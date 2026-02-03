@@ -1,0 +1,6 @@
+<div class="overlay-backdrop" *ngIf="overlayService.isLoading()">
+    <div class="spinner-container">
+        <div class="spinner"></div>
+        <p>{{ overlayService.message() }}</p>
+    </div>
+</div>

@@ -50,17 +50,27 @@
   </aside>
 
   <main class="content">
-    @if (episodes().length > 0) {
+    @if (isLoading()) {
+    <div class="grid-container">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]"></div>
+    </div>
+    } @else if (episodes().length > 0) {
+    @defer (on viewport) {
     <div class="grid-container">
       @for (ep of episodes(); track ep.id) {
       <app-episode-card [episode]="ep" [isSeen]="isSeen(ep.id)" (onOpen)="openPlayer($event)"></app-episode-card>
       }
     </div>
+    } @placeholder {
+    <div class="grid-container">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]"></div>
+    </div>
+    }
 
     <div class="pagination" *ngIf="totalPages() > 1">
-      <button (click)="prevPage()" [disabled]="currentPage() === 1">← Anterior</button>
+      <button (click)="prevPage()" [disabled]="currentPage() === 1 || isLoading()">← Anterior</button>
       <span>Página {{ currentPage() }} de {{ totalPages() }}</span>
-      <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Siguiente →</button>
+      <button (click)="nextPage()" [disabled]="currentPage() === totalPages() || isLoading()">Siguiente →</button>
     </div>
     } @else {
     <div class="empty-state">
